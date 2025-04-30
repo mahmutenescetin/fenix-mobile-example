@@ -1,6 +1,12 @@
-# fenix_mobile_example
+# Fenix Mobile Example
 
-A new Flutter project.
+This project is based on **Clean Architecture** principles.
+
+- **Provider** is used for state management.
+- Layered architecture is applied (Data, Domain, Presentation).
+- This is a **study case** prepared for Fenix Mobile.
+
+Throughout the development, Clean Architecture rules and clean, maintainable code practices have been followed.
 
 ## Getting Started
 
