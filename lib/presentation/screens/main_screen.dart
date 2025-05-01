@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'favorites_screen.dart';
 
@@ -28,14 +29,14 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Ana Sayfa',
+            icon: const Icon(Icons.home),
+            label: AppLocalizations.of(context).translate('home'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favoriler',
+            icon: const Icon(Icons.favorite),
+            label: AppLocalizations.of(context).translate('favorites'),
           ),
         ],
         currentIndex: _selectedIndex,

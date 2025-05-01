@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/movie_list_widget.dart';
 import '../../core/extensions/error_handling_extension.dart';
@@ -27,7 +28,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favoriler'),
+        title: Text(AppLocalizations.of(context).translate('favorites')),
       ),
       body: Consumer<FavoritesProvider>(
         builder: (context, provider, child) {
@@ -45,7 +46,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
           final movies = provider.favorites;
           if (movies.isEmpty) {
-            return const Center(child: Text('Favori film bulunamadı'));
+            return Center(
+              child: Text(AppLocalizations.of(context).translate('no_movies_found')),
+            );
           }
 
           return MovieList(
