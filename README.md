@@ -1,10 +1,10 @@
 # Fenix Mobile Example
 
+This is a **study case** prepared for Fenix Mobile.
 This project is based on **Clean Architecture** principles.
 
 - **Provider** is used for state management.
 - Layered architecture is applied (Data, Domain, Presentation).
-- This is a **study case** prepared for Fenix Mobile.
 - The project uses cached_network_image package for efficient image loading and caching, improving user experience and reducing network traffic.
 - Dio HTTP client is implemented with a centralized error handling and interceptor system for robust API communication.
 
