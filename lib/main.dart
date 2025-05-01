@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/di/service_locator.dart';
-import 'data/datasources/movie_detail_datasource.dart';
-import 'data/repositories/movie_detail_repository_impl.dart';
-import 'domain/repositories/movie_detail_repository.dart';
+import 'core/l10n/app_localizations_delegate.dart';
 import 'presentation/screens/home_screen.dart';
 
 void main() {
@@ -19,11 +18,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ...ServiceLocator.providers,
-        Provider<MovieDetailRepository>(
-          create: (_) => MovieDetailRepositoryImpl(
-            MovieDetailDataSource(),
-          ),
-        ),
       ],
       child: MaterialApp(
         title: 'Movie App',
@@ -31,6 +25,16 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
+        locale: const Locale('tr'),
+        localizationsDelegates: const [
+          AppLocalizationsDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('tr'),
+        ],
         home: const HomeScreen(),
       ),
     );

@@ -4,6 +4,7 @@ import '../providers/home_provider.dart';
 import '../widgets/movie_list_widget.dart';
 import '../widgets/search_bar_widget.dart';
 import 'movie_detail_screen.dart';
+import '../../core/extensions/error_handling_extension.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,8 +40,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (provider.error != null) {
-                  return Center(child: Text('Error: ${provider.error}'));
+                if (provider.hasError) {
+                  context.showErrorDialog(
+                    failure: provider.failure!,
+                    onRetry: () => provider.getTopRatedMovies(),
+                  );
+                  return const SizedBox();
                 }
 
                 final movies = provider.movies;

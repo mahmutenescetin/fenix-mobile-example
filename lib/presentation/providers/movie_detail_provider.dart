@@ -1,31 +1,33 @@
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/movie_detail_entity.dart';
 import '../../domain/usecases/get_movie_detail.dart';
+import 'base/error_state_mixin.dart';
+import '../../core/error/failures.dart';
 
-class MovieDetailProvider with ChangeNotifier {
+class MovieDetailProvider with ChangeNotifier, ErrorStateMixin {
   final GetMovieDetail _getMovieDetail;
   MovieDetailEntity? _movieDetail;
-  String? _error;
   bool _isLoading = false;
 
   MovieDetailProvider(this._getMovieDetail);
 
   MovieDetailEntity? get movieDetail => _movieDetail;
-  String? get error => _error;
   bool get isLoading => _isLoading;
 
   Future<void> loadMovieDetail(int movieId) async {
     _isLoading = true;
-    _error = null;
     notifyListeners();
 
-    try {
-      _movieDetail = await _getMovieDetail(movieId);
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    await handleError(
+      () async {
+        _movieDetail = await _getMovieDetail(movieId);
+      },
+      (failure) {
+        _movieDetail = null;
+      },
+    );
+
+    _isLoading = false;
+    notifyListeners();
   }
 } 

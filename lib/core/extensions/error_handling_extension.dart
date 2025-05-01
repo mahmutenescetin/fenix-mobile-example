@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../error/failures.dart';
+import '../l10n/app_localizations.dart';
 import '../../presentation/widgets/error_dialog.dart';
 
 extension ErrorHandlingExtension on BuildContext {
@@ -10,24 +11,26 @@ extension ErrorHandlingExtension on BuildContext {
     String title;
     String message;
 
+    final l10n = AppLocalizations.of(this);
+
     switch (failure.runtimeType) {
       case ServerFailure:
-        title = 'Sunucu Hatası';
+        title = l10n.serverError;
         message = failure.code != null 
-          ? 'Sunucu hatası oluştu (${failure.code}): ${failure.message}'
-          : 'Sunucu hatası oluştu: ${failure.message}';
+          ? l10n.serverErrorWithCode(failure.code!)
+          : l10n.serverError;
         break;
       case NetworkFailure:
-        title = 'Bağlantı Hatası';
-        message = 'İnternet bağlantınızı kontrol edip tekrar deneyiniz: ${failure.message}';
+        title = l10n.networkError;
+        message = l10n.networkError;
         break;
       case CacheFailure:
-        title = 'Önbellek Hatası';
-        message = 'Veriler yüklenirken bir hata oluştu: ${failure.message}';
+        title = l10n.cacheError;
+        message = l10n.cacheError;
         break;
       default:
-        title = 'Hata';
-        message = 'Beklenmeyen bir hata oluştu: ${failure.message}';
+        title = l10n.unknownError;
+        message = l10n.unknownError;
     }
 
     showDialog(

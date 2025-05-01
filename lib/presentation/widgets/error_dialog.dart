@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_localizations.dart';
 
 class ErrorDialog extends StatelessWidget {
   final String title;
@@ -14,6 +15,8 @@ class ErrorDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return AlertDialog(
       title: Text(
         title,
@@ -34,7 +37,7 @@ class ErrorDialog extends StatelessWidget {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('İptal'),
+                  child: Text(l10n.cancelButton),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
@@ -45,7 +48,7 @@ class ErrorDialog extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                   ),
-                  child: const Text('Tekrar Dene'),
+                  child: Text(l10n.retryButton),
                 ),
               ],
             ),

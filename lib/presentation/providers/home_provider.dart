@@ -16,7 +16,6 @@ class HomeProvider extends ChangeNotifier with ErrorStateMixin {
   static const cacheDuration = Duration(minutes: 5);
 
   List<MovieEntity> _movies = [];
-  String? _error;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String _searchQuery = '';
@@ -24,7 +23,6 @@ class HomeProvider extends ChangeNotifier with ErrorStateMixin {
   bool _hasMorePages = true;
 
   List<MovieEntity> get movies => _movies;
-  String? get error => _error;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String get searchQuery => _searchQuery;
@@ -63,18 +61,22 @@ class HomeProvider extends ChangeNotifier with ErrorStateMixin {
   Future<void> getTopRatedMovies({bool loadMore = false}) async {
     if (loadMore && (!_hasMorePages || _isLoadingMore)) return;
 
-    await handleError(() async {
-      if (loadMore) {
-        _setLoadingMore(true);
-      } else {
-        _setLoading(true);
-        _resetPagination();
-      }
+    if (!loadMore && _isCacheValid()) {
+      _movies = _cachedTopRatedMovies!;
+      notifyListeners();
+      return;
+    }
 
-      try {
-        if (!loadMore && _isCacheValid()) {
-          _movies = _cachedTopRatedMovies!;
+    await handleError(
+      () async {
+        if (loadMore) {
+          _setLoadingMore(true);
         } else {
+          _setLoading(true);
+          _resetPagination();
+        }
+
+        try {
           final result = await _getTopRatedMovies(page: _currentPage);
           if (result.isEmpty) {
             _hasMorePages = false;
@@ -83,27 +85,27 @@ class HomeProvider extends ChangeNotifier with ErrorStateMixin {
               _movies.addAll(result);
             } else {
               _movies = result;
-              _cachedTopRatedMovies = _movies;
+              _cachedTopRatedMovies = result;
               _lastCacheTime = DateTime.now();
             }
             _currentPage++;
           }
+        } finally {
+          if (loadMore) {
+            _setLoadingMore(false);
+          } else {
+            _setLoading(false);
+          }
         }
-      } finally {
+      },
+      (failure) {
         if (loadMore) {
           _setLoadingMore(false);
         } else {
           _setLoading(false);
         }
-      }
-      notifyListeners();
-    }, (failure) {
-      if (loadMore) {
-        _setLoadingMore(false);
-      } else {
-        _setLoading(false);
-      }
-    });
+      },
+    );
   }
 
   void onSearchQueryChanged(String query) {
@@ -129,40 +131,43 @@ class HomeProvider extends ChangeNotifier with ErrorStateMixin {
 
     if (loadMore && (!_hasMorePages || _isLoadingMore)) return;
 
-    await handleError(() async {
-      if (loadMore) {
-        _setLoadingMore(true);
-      } else {
-        _setLoading(true);
-        _resetPagination();
-      }
-
-      try {
-        final result = await _searchMovies(query, page: _currentPage);
-        if (result.isEmpty) {
-          _hasMorePages = false;
+    await handleError(
+      () async {
+        if (loadMore) {
+          _setLoadingMore(true);
         } else {
-          if (loadMore) {
-            _movies.addAll(result);
-          } else {
-            _movies = result;
-          }
-          _currentPage++;
+          _setLoading(true);
+          _resetPagination();
         }
-      } finally {
+
+        try {
+          final result = await _searchMovies(query, page: _currentPage);
+          if (result.isEmpty) {
+            _hasMorePages = false;
+          } else {
+            if (loadMore) {
+              _movies.addAll(result);
+            } else {
+              _movies = result;
+            }
+            _currentPage++;
+          }
+        } finally {
+          if (loadMore) {
+            _setLoadingMore(false);
+          } else {
+            _setLoading(false);
+          }
+        }
+      },
+      (failure) {
         if (loadMore) {
           _setLoadingMore(false);
         } else {
           _setLoading(false);
         }
-      }
-    }, (failure) {
-      if (loadMore) {
-        _setLoadingMore(false);
-      } else {
-        _setLoading(false);
-      }
-    });
+      },
+    );
   }
 
   void clearCache() {
