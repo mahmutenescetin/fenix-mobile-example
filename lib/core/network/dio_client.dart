@@ -4,46 +4,25 @@ import '../error/exceptions.dart';
 import 'http_client.dart';
 
 class DioClient implements HttpClient {
-  late final Dio _dio;
+  static Dio? _instance;
 
-  DioClient() {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: AppConfig.apiBaseUrl,
+  static Dio get instance {
+    _instance ??= Dio()
+      ..options = BaseOptions(
+        baseUrl: AppConfig.baseUrl,
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 3),
-      ),
-    );
-    _setupInterceptors();
-  }
+        sendTimeout: const Duration(seconds: 3),
+      )
+      ..interceptors.add(
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          error: true,
+        ),
+      );
 
-  void _setupInterceptors() {
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          final url = '${options.path}?api_key=${AppConfig.apiKey}';
-          if (options.queryParameters.isNotEmpty) {
-            final queryString = options.queryParameters.entries
-                .map((e) => '${e.key}=${e.value}')
-                .join('&');
-            options.path = '$url&$queryString';
-          } else {
-            options.path = url;
-          }
-          
-          print('Request: ${options.method} ${options.path}');
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          print('Response: ${response.statusCode}');
-          return handler.next(response);
-        },
-        onError: (error, handler) {
-          print('Error: ${error.message}');
-          return handler.next(error);
-        },
-      ),
-    );
+    return _instance!;
   }
 
   @override
@@ -53,7 +32,7 @@ class DioClient implements HttpClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final response = await _dio.get(
+      final response = await instance.get(
         path,
         queryParameters: queryParameters,
         options: Options(headers: headers),
@@ -74,7 +53,7 @@ class DioClient implements HttpClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await instance.post(
         path,
         data: body,
         queryParameters: queryParameters,
@@ -96,7 +75,7 @@ class DioClient implements HttpClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final response = await _dio.put(
+      final response = await instance.put(
         path,
         data: body,
         queryParameters: queryParameters,
@@ -117,7 +96,7 @@ class DioClient implements HttpClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final response = await _dio.delete(
+      final response = await instance.delete(
         path,
         queryParameters: queryParameters,
         options: Options(headers: headers),

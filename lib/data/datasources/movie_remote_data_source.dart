@@ -1,41 +1,58 @@
+import 'dart:developer' as developer;
 import '../../core/config/app_config.dart';
+import '../../core/error/exceptions.dart';
 import '../../core/network/http_client.dart';
+import '../../domain/entities/movie_entity.dart';
 import '../models/movie_model.dart';
 
 abstract class MovieRemoteDataSource {
-  Future<List<MovieModel>> getTopRatedMovies();
-  Future<List<MovieModel>> searchMovies(String query);
+  Future<List<MovieEntity>> getTopRatedMovies({int page = 1});
+  Future<List<MovieEntity>> searchMovies(String query, {int page = 1});
 }
 
 class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
-  final HttpClient _client;
+  final HttpClient client;
 
-  MovieRemoteDataSourceImpl(this._client);
+  MovieRemoteDataSourceImpl({required this.client});
 
   @override
-  Future<List<MovieModel>> getTopRatedMovies() async {
+  Future<List<MovieEntity>> getTopRatedMovies({int page = 1}) async {
     try {
-      final response = await _client.get(AppConfig.topRatedMovies);
-      return (response['results'] as List)
-          .map((json) => MovieModel.fromJson(json))
-          .toList();
+      developer.log('Fetching top rated movies');
+      final response = await client.get(
+        AppConfig.topRatedMovies,
+        queryParameters: {
+          'api_key': AppConfig.apiKey,
+          'page': page,
+        },
+      );
+
+      final List<dynamic> results = response['results'];
+      return results.map((json) => MovieModel.fromJson(json)).toList();
     } catch (e) {
-      rethrow;
+      developer.log('Error fetching top rated movies: $e');
+      throw ServerException(message: e.toString());
     }
   }
 
   @override
-  Future<List<MovieModel>> searchMovies(String query) async {
+  Future<List<MovieEntity>> searchMovies(String query, {int page = 1}) async {
     try {
-      final response = await _client.get(
+      developer.log('Searching movies with query: $query');
+      final response = await client.get(
         AppConfig.searchMovies,
-        queryParameters: {'query': query},
+        queryParameters: {
+          'api_key': AppConfig.apiKey,
+          'query': query,
+          'page': page,
+        },
       );
-      return (response['results'] as List)
-          .map((json) => MovieModel.fromJson(json))
-          .toList();
+
+      final List<dynamic> results = response['results'];
+      return results.map((json) => MovieModel.fromJson(json)).toList();
     } catch (e) {
-      rethrow;
+      developer.log('Error searching movies: $e');
+      throw ServerException(message: e.toString());
     }
   }
 } 

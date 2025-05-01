@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/di/service_locator.dart';
+import 'data/datasources/movie_detail_datasource.dart';
+import 'data/repositories/movie_detail_repository_impl.dart';
+import 'domain/repositories/movie_detail_repository.dart';
 import 'presentation/screens/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(
-    MultiProvider(
-      providers: ServiceLocator.providers,
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,13 +16,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Movie App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ...ServiceLocator.providers,
+        Provider<MovieDetailRepository>(
+          create: (_) => MovieDetailRepositoryImpl(
+            MovieDetailDataSource(),
+          ),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Movie App',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const HomeScreen(),
       ),
-      home: const HomeScreen(),
     );
   }
 }

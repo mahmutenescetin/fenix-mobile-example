@@ -1,124 +1,147 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../providers/home_provider.dart';
+import '../../domain/entities/movie_entity.dart';
 import '../../core/config/app_config.dart';
 
-class MovieList extends StatelessWidget {
-  const MovieList({super.key});
+class MovieList extends StatefulWidget {
+  final List<MovieEntity> movies;
+  final Function(MovieEntity) onMovieTap;
+  final VoidCallback onLoadMore;
+  final bool isLoadingMore;
+  final bool hasMorePages;
+
+  const MovieList({
+    Key? key,
+    required this.movies,
+    required this.onMovieTap,
+    required this.onLoadMore,
+    required this.isLoadingMore,
+    required this.hasMorePages,
+  }) : super(key: key);
+
+  @override
+  State<MovieList> createState() => _MovieListState();
+}
+
+class _MovieListState extends State<MovieList> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isFirstLoad = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isFirstLoad) {
+      _precacheImages();
+      _isFirstLoad = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!widget.isLoadingMore && widget.hasMorePages) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+      if (currentScroll >= maxScroll * 0.9) {
+        widget.onLoadMore();
+      }
+    }
+  }
+
+  String _getImageUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return '${AppConfig.imageBaseUrl}/w185$path';
+  }
+
+  Future<void> _precacheImages() async {
+    for (var movie in widget.movies) {
+      final imageUrl = _getImageUrl(movie.posterPath);
+      if (imageUrl.isNotEmpty) {
+        precacheImage(NetworkImage(imageUrl), context);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: widget.movies.length + (widget.isLoadingMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == widget.movies.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
         }
 
-        if (provider.error.isNotEmpty) {
-          return const Center(child: Text('Error'));
-        }
-
-        if (provider.movies.isEmpty) {
-          return const Center(child: Text('No movies found'));
-        }
-
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.7,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: provider.movies.length,
-          itemBuilder: (context, index) {
-            final movie = provider.movies[index];
-            return Hero(
-              tag: 'movie_${movie.id}',
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    movie.posterPath.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: '${AppConfig.imageBaseUrl}${movie.posterPath}',
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.movie,
-                              size: 50,
-                            ),
-                          )
-                        : const Icon(Icons.movie, size: 50),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withAlpha(204),
-                              Colors.transparent,
-                            ],
+        final movie = widget.movies[index];
+        final imageUrl = _getImageUrl(movie.posterPath);
+        return ListTile(
+          leading: imageUrl.isNotEmpty
+              ? Hero(
+                  tag: 'movie_${movie.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      imageUrl,
+                      width: 50,
+                      height: 75,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const SizedBox(
+                          width: 50,
+                          height: 75,
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              movie.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    movie.voteAverage.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 50,
+                          height: 75,
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.error_outline,
+                            size: 24,
+                            color: Colors.red,
+                          ),
+                        );
+                      },
                     ),
-                  ],
+                  ),
+                )
+              : Container(
+                  width: 50,
+                  height: 75,
+                  color: Colors.grey[200],
+                  child: const Icon(
+                    Icons.movie_outlined,
+                    size: 24,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-            );
-          },
+          title: Text(movie.title),
+          subtitle: Text(
+            movie.overview,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          onTap: () => widget.onMovieTap(movie),
         );
       },
     );

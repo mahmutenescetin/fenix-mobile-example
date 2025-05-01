@@ -15,7 +15,10 @@ class ServiceLocator {
       create: (_) => DioClient(),
     ),
     ProxyProvider<HttpClient, MovieRemoteDataSource>(
-      update: (_, client, __) => MovieRemoteDataSourceImpl(client),
+      create: (context) => MovieRemoteDataSourceImpl(
+        client: context.read<HttpClient>(),
+      ),
+      update: (_, client, __) => MovieRemoteDataSourceImpl(client: client),
     ),
     ProxyProvider<MovieRemoteDataSource, MovieRepository>(
       update: (_, dataSource, __) => MovieRepositoryImpl(dataSource),
@@ -28,16 +31,10 @@ class ServiceLocator {
     ),
     ChangeNotifierProxyProvider2<GetTopRatedMovies, SearchMovies, HomeProvider>(
       create: (context) => HomeProvider(
-        getTopRatedMovies: context.read<GetTopRatedMovies>(),
-        searchMovies: context.read<SearchMovies>(),
+        context.read<GetTopRatedMovies>(),
+        context.read<SearchMovies>(),
       ),
-      update: (_, getTopRatedMovies, searchMovies, homeProvider) {
-        homeProvider?.updateUseCases(
-          getTopRatedMovies: getTopRatedMovies,
-          searchMovies: searchMovies,
-        );
-        return homeProvider!;
-      },
+      update: (_, __, ___, homeProvider) => homeProvider!,
     ),
   ];
 } 

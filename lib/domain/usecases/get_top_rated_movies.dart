@@ -2,11 +2,11 @@ import '../entities/movie_entity.dart';
 import '../repositories/movie_repository.dart';
 
 class GetTopRatedMovies {
-  final MovieRepository repository;
+  final MovieRepository _repository;
 
-  GetTopRatedMovies(this.repository);
+  GetTopRatedMovies(this._repository);
 
-  Future<List<MovieEntity>> call() async {
-    return await repository.getTopRatedMovies();
+  Future<List<MovieEntity>> call({int page = 1}) async {
+    return await _repository.getTopRatedMovies(page: page);
   }
 } 

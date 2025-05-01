@@ -3,22 +3,20 @@ import 'package:provider/provider.dart';
 import '../providers/home_provider.dart';
 
 class MovieSearchBar extends StatelessWidget {
-  const MovieSearchBar({super.key});
+  const MovieSearchBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Search for a movie...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+        decoration: const InputDecoration(
+          hintText: 'Search movies...',
+          prefixIcon: Icon(Icons.search),
+          border: OutlineInputBorder(),
         ),
-        onChanged: (query) {
-          context.read<HomeProvider>().onSearchQueryChanged(query);
+        onChanged: (value) {
+          context.read<HomeProvider>().onSearchQueryChanged(value);
         },
       ),
     );
