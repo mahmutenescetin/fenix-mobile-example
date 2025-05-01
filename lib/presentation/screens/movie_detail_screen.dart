@@ -1,14 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../domain/entities/movie_entity.dart';
 import '../../core/config/app_config.dart';
+import '../providers/favorites_provider.dart';
 
-class MovieDetailScreen extends StatelessWidget {
+class MovieDetailScreen extends StatefulWidget {
   final MovieEntity movie;
 
   const MovieDetailScreen({
     Key? key,
     required this.movie,
   }) : super(key: key);
+
+  @override
+  State<MovieDetailScreen> createState() => _MovieDetailScreenState();
+}
+
+class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  late final FavoritesProvider _favoritesProvider;
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _favoritesProvider = context.read<FavoritesProvider>();
+    _checkFavoriteStatus();
+  }
+
+  Future<void> _checkFavoriteStatus() async {
+    final isFavorite = await _favoritesProvider.isFavorite(widget.movie.id);
+    if (mounted) {
+      setState(() {
+        _isFavorite = isFavorite;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_isFavorite) {
+      await _favoritesProvider.removeFromFavorites(widget.movie.id);
+    } else {
+      await _favoritesProvider.addToFavorites(widget.movie);
+    }
+    if (mounted) {
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+    }
+  }
 
   String _getImageUrl(String? path) {
     if (path == null || path.isEmpty) return '';
@@ -36,6 +75,22 @@ class MovieDetailScreen extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
+            actions: [
+              Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withAlpha(128),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    _isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: _isFavorite ? Colors.red : Colors.white,
+                  ),
+                  onPressed: _toggleFavorite,
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -50,7 +105,7 @@ class MovieDetailScreen extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  movie.title,
+                  widget.movie.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -59,13 +114,13 @@ class MovieDetailScreen extends StatelessWidget {
                 ),
               ),
               background: Hero(
-                tag: 'movie_${movie.id}',
+                tag: 'movie_${widget.movie.id}',
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    movie.posterPath != null
+                    widget.movie.posterPath != null
                         ? Image.network(
-                            _getImageUrl(movie.posterPath),
+                            _getImageUrl(widget.movie.posterPath),
                             fit: BoxFit.cover,
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) {
@@ -126,14 +181,14 @@ class MovieDetailScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  Text(movie.overview),
+                  Text(widget.movie.overview),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
-                        movie.voteAverage.toStringAsFixed(1),
+                        widget.movie.voteAverage.toStringAsFixed(1),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],
