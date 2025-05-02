@@ -17,9 +17,10 @@ class ViewModelBuilder<T extends BaseViewModel> extends StatelessWidget {
     return ChangeNotifierProvider<T>(
       create: (context) {
         final viewModel = initViewModel();
-        if (viewModel is BaseViewModel) {
-          (viewModel as BaseViewModel).onBindingCreated();
-        }
+
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        (viewModel as BaseViewModel).onBindingCreated();
+
         return viewModel;
       },
       child: Consumer<T>(
@@ -27,4 +28,4 @@ class ViewModelBuilder<T extends BaseViewModel> extends StatelessWidget {
       ),
     );
   }
-} 
+}

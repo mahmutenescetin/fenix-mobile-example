@@ -115,16 +115,16 @@ class HomeViewModel extends BaseViewModel {
   }
 
   void clearSearch() {
-    // Implement clear search functionality
+
   }
 
   void scrollStart() {
     debugPrint('scrollStart called');
-    // Implement scroll handling if needed
+
   }
 
   void navigateToDetail(int movieId) {
     debugPrint('navigateToDetail called with movieId: $movieId');
-    // TODO: Implement navigation
+
   }
 } 

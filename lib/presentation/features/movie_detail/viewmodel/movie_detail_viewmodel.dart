@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:fenix_mobile_example/domain/entities/movie_detail_entity.dart';
 import 'package:fenix_mobile_example/domain/usecases/get_movie_detail.dart';
 import 'package:fenix_mobile_example/core/base/base_viewmodel.dart';
@@ -44,28 +43,30 @@ class MovieDetailViewModel extends BaseViewModel {
     final prefs = await SharedPreferences.getInstance();
     _isFavorite = !_isFavorite;
     await prefs.setBool('favorite_$movieId', _isFavorite);
-    
+
     if (_isFavorite && _movie != null) {
       await prefs.setString('favorite_${movieId}_title', _movie!.title);
       await prefs.setString('favorite_${movieId}_overview', _movie!.overview);
-      await prefs.setString('favorite_${movieId}_posterPath', _movie!.posterPath ?? '');
-      await prefs.setDouble('favorite_${movieId}_voteAverage', _movie!.voteAverage);
+      await prefs.setString(
+          'favorite_${movieId}_posterPath', _movie!.posterPath ?? '');
+      await prefs.setDouble(
+          'favorite_${movieId}_voteAverage', _movie!.voteAverage);
     } else {
       await prefs.remove('favorite_${movieId}_title');
       await prefs.remove('favorite_${movieId}_overview');
       await prefs.remove('favorite_${movieId}_posterPath');
       await prefs.remove('favorite_${movieId}_voteAverage');
     }
-    
+
     notifyListeners();
   }
 
   Future<void> removeFromFavorites(int movieId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('favorite_${movieId}');
+    await prefs.remove('favorite_$movieId');
     await prefs.remove('favorite_${movieId}_title');
     await prefs.remove('favorite_${movieId}_overview');
     await prefs.remove('favorite_${movieId}_posterPath');
     await prefs.remove('favorite_${movieId}_voteAverage');
   }
-} 
+}
