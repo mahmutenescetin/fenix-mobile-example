@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/base/error_state_mixin.dart';
 import '../../../../domain/entities/movie_entity.dart';
 import '../../../../domain/usecases/get_top_rated_movies.dart';
 import '../../../../domain/usecases/search_movies.dart';
-import '../../../providers/base/error_state_mixin.dart';
 
 class HomeViewmodel extends ChangeNotifier with ErrorStateMixin {
   final GetTopRatedMovies _getTopRatedMovies;

@@ -1,7 +1,7 @@
+import 'package:fenix_mobile_example/core/base/error_state_mixin.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../domain/entities/movie_detail_entity.dart';
 import '../../../../domain/usecases/get_movie_detail.dart';
-import '../../../providers/base/error_state_mixin.dart';
 
 
 class MovieDetailViewmodel with ChangeNotifier, ErrorStateMixin {
