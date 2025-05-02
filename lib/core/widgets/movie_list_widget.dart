@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/movie_entity.dart';
-import '../../core/config/app_config.dart';
+import '../config/app_config.dart';
 
 class MovieList extends StatefulWidget {
   final List<MovieEntity> movies;

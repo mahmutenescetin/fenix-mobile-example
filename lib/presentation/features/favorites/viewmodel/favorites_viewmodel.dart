@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/movie_entity.dart';
-import '../../domain/usecases/get_favorites.dart';
-import '../../domain/usecases/add_to_favorites.dart';
-import '../../domain/usecases/remove_from_favorites.dart';
-import '../../domain/usecases/is_favorite.dart';
-import 'base/error_state_mixin.dart';
+import '../../../../domain/entities/movie_entity.dart';
+import '../../../../domain/usecases/get_favorites.dart';
+import '../../../../domain/usecases/add_to_favorites.dart';
+import '../../../../domain/usecases/remove_from_favorites.dart';
+import '../../../../domain/usecases/is_favorite.dart';
+import '../../../providers/base/error_state_mixin.dart';
 
-class FavoritesProvider extends ChangeNotifier with ErrorStateMixin {
+class FavoritesViewmodel extends ChangeNotifier with ErrorStateMixin {
   final GetFavorites _getFavorites;
   final AddToFavorites _addToFavorites;
   final RemoveFromFavorites _removeFromFavorites;
@@ -15,7 +15,7 @@ class FavoritesProvider extends ChangeNotifier with ErrorStateMixin {
   List<MovieEntity> _favorites = [];
   bool _isLoading = false;
 
-  FavoritesProvider(
+  FavoritesViewmodel(
     this._getFavorites,
     this._addToFavorites,
     this._removeFromFavorites,

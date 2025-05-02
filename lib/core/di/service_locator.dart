@@ -19,9 +19,9 @@ import '../../domain/usecases/get_favorites.dart';
 import '../../domain/usecases/add_to_favorites.dart';
 import '../../domain/usecases/remove_from_favorites.dart';
 import '../../domain/usecases/is_favorite.dart';
-import '../../presentation/providers/home_provider.dart';
-import '../../presentation/providers/movie_detail_provider.dart';
-import '../../presentation/providers/favorites_provider.dart';
+import '../../presentation/features/home/viewmodel/home_viewmodel.dart';
+import '../../presentation/features/movie_detail/viewmodel/movie_detail_viewmodel.dart';
+import '../../presentation/features/favorites/viewmodel/favorites_viewmodel.dart';
 
 class ServiceLocator {
   static late final SharedPreferences _prefs;
@@ -85,22 +85,22 @@ class ServiceLocator {
     ProxyProvider<FavoritesRepository, IsFavorite>(
       update: (_, repository, __) => IsFavorite(repository),
     ),
-    ChangeNotifierProxyProvider2<GetTopRatedMovies, SearchMovies, HomeProvider>(
-      create: (context) => HomeProvider(
+    ChangeNotifierProxyProvider2<GetTopRatedMovies, SearchMovies, HomeViewmodel>(
+      create: (context) => HomeViewmodel(
         context.read<GetTopRatedMovies>(),
         context.read<SearchMovies>(),
       ),
       update: (_, __, ___, homeProvider) => homeProvider!,
     ),
-    ChangeNotifierProxyProvider<GetMovieDetail, MovieDetailProvider>(
-      create: (context) => MovieDetailProvider(
+    ChangeNotifierProxyProvider<GetMovieDetail, MovieDetailViewmodel>(
+      create: (context) => MovieDetailViewmodel(
         context.read<GetMovieDetail>(),
       ),
-      update: (_, getMovieDetail, __) => MovieDetailProvider(getMovieDetail),
+      update: (_, getMovieDetail, __) => MovieDetailViewmodel(getMovieDetail),
     ),
     ChangeNotifierProxyProvider4<GetFavorites, AddToFavorites,
-        RemoveFromFavorites, IsFavorite, FavoritesProvider>(
-      create: (context) => FavoritesProvider(
+        RemoveFromFavorites, IsFavorite, FavoritesViewmodel>(
+      create: (context) => FavoritesViewmodel(
         context.read<GetFavorites>(),
         context.read<AddToFavorites>(),
         context.read<RemoveFromFavorites>(),
@@ -108,7 +108,7 @@ class ServiceLocator {
       ),
       update: (_, getFavorites, addToFavorites, removeFromFavorites, isFavorite,
               __) =>
-          FavoritesProvider(
+          FavoritesViewmodel(
         getFavorites,
         addToFavorites,
         removeFromFavorites,

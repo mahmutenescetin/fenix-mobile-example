@@ -1,25 +1,28 @@
+
+import 'package:fenix_mobile_example/core/extensions/error_handling_extension.dart';
+import 'package:fenix_mobile_example/core/widgets/movie_list_widget.dart';
+import 'package:fenix_mobile_example/presentation/features/home/viewmodel/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/home_provider.dart';
-import '../widgets/movie_list_widget.dart';
-import '../widgets/search_bar_widget.dart';
-import 'movie_detail_screen.dart';
-import '../../core/extensions/error_handling_extension.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+import '../../../../core/widgets/search_bar_widget.dart';
+import '../../movie_detail/view/movie_detail_view.dart';
+
+
+class HomeView extends StatefulWidget {
+  const HomeView({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<HomeProvider>().getTopRatedMovies();
+        context.read<HomeViewmodel>().getTopRatedMovies();
       }
     });
   }
@@ -34,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           const MovieSearchBar(),
           Expanded(
-            child: Consumer<HomeProvider>(
+            child: Consumer<HomeViewmodel>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
                   return const Center(child: CircularProgressIndicator());
@@ -59,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MovieDetailScreen(movie: movie),
+                        builder: (context) => MovieDetailView(movie: movie),
                       ),
                     );
                   },
@@ -80,4 +83,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-} 
+}

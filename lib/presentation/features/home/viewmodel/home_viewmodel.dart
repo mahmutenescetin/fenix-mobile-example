@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/movie_entity.dart';
-import '../../domain/usecases/get_top_rated_movies.dart';
-import '../../domain/usecases/search_movies.dart';
-import 'base/error_state_mixin.dart';
+import '../../../../domain/entities/movie_entity.dart';
+import '../../../../domain/usecases/get_top_rated_movies.dart';
+import '../../../../domain/usecases/search_movies.dart';
+import '../../../providers/base/error_state_mixin.dart';
 
-class HomeProvider extends ChangeNotifier with ErrorStateMixin {
+class HomeViewmodel extends ChangeNotifier with ErrorStateMixin {
   final GetTopRatedMovies _getTopRatedMovies;
   final SearchMovies _searchMovies;
   Timer? _debounce;
@@ -28,7 +28,7 @@ class HomeProvider extends ChangeNotifier with ErrorStateMixin {
   String get searchQuery => _searchQuery;
   bool get hasMorePages => _hasMorePages;
 
-  HomeProvider(this._getTopRatedMovies, this._searchMovies);
+  HomeViewmodel(this._getTopRatedMovies, this._searchMovies);
 
   @override
   void dispose() {

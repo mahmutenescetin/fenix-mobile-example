@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../domain/entities/movie_entity.dart';
-import '../../core/config/app_config.dart';
-import '../providers/favorites_provider.dart';
+import '../../../../domain/entities/movie_entity.dart';
+import '../../../../core/config/app_config.dart';
+import '../../favorites/viewmodel/favorites_viewmodel.dart';
 
-class MovieDetailScreen extends StatefulWidget {
+class MovieDetailView extends StatefulWidget {
   final MovieEntity movie;
 
-  const MovieDetailScreen({
+  const MovieDetailView({
     Key? key,
     required this.movie,
   }) : super(key: key);
 
   @override
-  State<MovieDetailScreen> createState() => _MovieDetailScreenState();
+  State<MovieDetailView> createState() => _MovieDetailViewState();
 }
 
-class _MovieDetailScreenState extends State<MovieDetailScreen> {
-  late final FavoritesProvider _favoritesProvider;
+class _MovieDetailViewState extends State<MovieDetailView> {
+  late final FavoritesViewmodel _favoritesProvider;
   bool _isFavorite = false;
 
   @override
   void initState() {
     super.initState();
-    _favoritesProvider = context.read<FavoritesProvider>();
+    _favoritesProvider = context.read<FavoritesViewmodel>();
     _checkFavoriteStatus();
   }
 

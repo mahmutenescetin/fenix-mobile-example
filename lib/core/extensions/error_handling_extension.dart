@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../error/failures.dart';
 import '../l10n/app_localizations.dart';
-import '../../presentation/widgets/error_dialog.dart';
+import '../widgets/error_dialog.dart';
 
 extension ErrorHandlingExtension on BuildContext {
   void showErrorDialog({

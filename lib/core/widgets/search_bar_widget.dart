@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/home_provider.dart';
+import '../../presentation/features/home/viewmodel/home_viewmodel.dart';
 
 class MovieSearchBar extends StatelessWidget {
   const MovieSearchBar({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class MovieSearchBar extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
         onChanged: (value) {
-          context.read<HomeProvider>().onSearchQueryChanged(value);
+          context.read<HomeViewmodel>().onSearchQueryChanged(value);
         },
       ),
     );

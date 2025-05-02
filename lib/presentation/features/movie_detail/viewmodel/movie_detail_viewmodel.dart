@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/movie_detail_entity.dart';
-import '../../domain/usecases/get_movie_detail.dart';
-import 'base/error_state_mixin.dart';
-import '../../core/error/failures.dart';
+import '../../../../domain/entities/movie_detail_entity.dart';
+import '../../../../domain/usecases/get_movie_detail.dart';
+import '../../../providers/base/error_state_mixin.dart';
 
-class MovieDetailProvider with ChangeNotifier, ErrorStateMixin {
+
+class MovieDetailViewmodel with ChangeNotifier, ErrorStateMixin {
   final GetMovieDetail _getMovieDetail;
   MovieDetailEntity? _movieDetail;
   bool _isLoading = false;
 
-  MovieDetailProvider(this._getMovieDetail);
+  MovieDetailViewmodel(this._getMovieDetail);
 
   MovieDetailEntity? get movieDetail => _movieDetail;
   bool get isLoading => _isLoading;

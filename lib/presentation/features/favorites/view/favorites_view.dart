@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/l10n/app_localizations.dart';
-import '../providers/favorites_provider.dart';
-import '../widgets/movie_list_widget.dart';
-import '../../core/extensions/error_handling_extension.dart';
-import 'movie_detail_screen.dart';
+import '../../../../core/l10n/app_localizations.dart';
+import '../viewmodel/favorites_viewmodel.dart';
+import '../../../../core/widgets/movie_list_widget.dart';
+import '../../../../core/extensions/error_handling_extension.dart';
+import '../../movie_detail/view/movie_detail_view.dart';
 
-class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({super.key});
+class FavoritesView extends StatefulWidget {
+  const FavoritesView({super.key});
 
   @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
+  State<FavoritesView> createState() => _FavoritesViewState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
+class _FavoritesViewState extends State<FavoritesView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<FavoritesProvider>().loadFavorites();
+        context.read<FavoritesViewmodel>().loadFavorites();
       }
     });
   }
@@ -30,7 +30,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).translate('favorites')),
       ),
-      body: Consumer<FavoritesProvider>(
+      body: Consumer<FavoritesViewmodel>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -47,7 +47,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           final movies = provider.favorites;
           if (movies.isEmpty) {
             return Center(
-              child: Text(AppLocalizations.of(context).translate('no_movies_found')),
+              child: Text(
+                  AppLocalizations.of(context).translate('no_movies_found')),
             );
           }
 
@@ -57,7 +58,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MovieDetailScreen(movie: movie),
+                  builder: (context) => MovieDetailView(movie: movie),
                 ),
               );
             },
@@ -69,4 +70,4 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
     );
   }
-} 
+}

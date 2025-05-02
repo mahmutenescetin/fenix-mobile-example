@@ -1,21 +1,21 @@
+import 'package:fenix_mobile_example/presentation/features/home/view/home_view.dart';
 import 'package:flutter/material.dart';
-import '../../core/l10n/app_localizations.dart';
-import 'home_screen.dart';
-import 'favorites_screen.dart';
+import '../../../../core/l10n/app_localizations.dart';
+import '../../favorites/view/favorites_view.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class MainView extends StatefulWidget {
+  const MainView({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainView> createState() => _MainViewState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainViewState extends State<MainView> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
-    const FavoritesScreen(),
+    const HomeView(),
+    const FavoritesView(),
   ];
 
   void _onItemTapped(int index) {
