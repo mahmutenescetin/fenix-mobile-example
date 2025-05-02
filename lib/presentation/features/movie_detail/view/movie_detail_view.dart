@@ -5,6 +5,7 @@ import 'package:fenix_mobile_example/core/base/stateless_widget.dart';
 import 'package:fenix_mobile_example/presentation/features/movie_detail/viewmodel/movie_detail_viewmodel.dart';
 import 'package:fenix_mobile_example/domain/usecases/get_movie_detail.dart';
 import 'package:fenix_mobile_example/core/extensions/context_localization_extension.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MovieDetailView extends BaseStatelessWidget {
   final int movieId;
@@ -43,11 +44,23 @@ class MovieDetailView extends BaseStatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (viewModel.movie?.posterPath?.isNotEmpty == true)
-                              Image.network(
-                                'https://image.tmdb.org/t/p/w500${viewModel.movie?.posterPath}',
+                              CachedNetworkImage(
+                                imageUrl: 'https://image.tmdb.org/t/p/w500${viewModel.movie?.posterPath}',
                                 width: double.infinity,
                                 height: 300,
                                 fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  width: double.infinity,
+                                  height: 300,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.movie, size: 64, color: Colors.grey),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  width: double.infinity,
+                                  height: 300,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.error, size: 64, color: Colors.red),
+                                ),
                               ),
                             Padding(
                               padding: const EdgeInsets.all(16.0),

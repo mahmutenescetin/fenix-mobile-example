@@ -4,6 +4,7 @@ import 'package:fenix_mobile_example/core/base/stateless_widget.dart';
 import 'package:fenix_mobile_example/presentation/features/favorites/viewmodel/favorites_viewmodel.dart';
 import 'package:fenix_mobile_example/presentation/features/movie_detail/view/movie_detail_view.dart';
 import 'package:fenix_mobile_example/core/extensions/context_localization_extension.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class FavoritesView extends BaseStatelessWidget {
   const FavoritesView({super.key});
@@ -95,11 +96,23 @@ class FavoritesView extends BaseStatelessWidget {
                                         ClipRRect(
                                           borderRadius: BorderRadius.circular(8),
                                           child: movie.posterPath != null
-                                              ? Image.network(
-                                                  'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                                              ? CachedNetworkImage(
+                                                  imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
                                                   width: 80,
                                                   height: 120,
                                                   fit: BoxFit.cover,
+                                                  placeholder: (context, url) => Container(
+                                                    width: 80,
+                                                    height: 120,
+                                                    color: Colors.grey[300],
+                                                    child: const Icon(Icons.movie, size: 40, color: Colors.grey),
+                                                  ),
+                                                  errorWidget: (context, url, error) => Container(
+                                                    width: 80,
+                                                    height: 120,
+                                                    color: Colors.grey[300],
+                                                    child: const Icon(Icons.error, size: 40, color: Colors.red),
+                                                  ),
                                                 )
                                               : Container(
                                                   width: 80,

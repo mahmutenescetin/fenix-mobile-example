@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:fenix_mobile_example/domain/usecases/get_top_rated_movies.dart';
 import 'package:fenix_mobile_example/domain/usecases/search_movies.dart';
 import 'package:fenix_mobile_example/core/extensions/context_localization_extension.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeView extends BaseStatelessWidget {
   const HomeView({super.key});
@@ -133,11 +134,23 @@ class HomeView extends BaseStatelessWidget {
                                               ClipRRect(
                                                 borderRadius: BorderRadius.circular(8),
                                                 child: movie.posterPath != null
-                                                    ? Image.network(
-                                                        'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                                                    ? CachedNetworkImage(
+                                                        imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
                                                         width: 80,
                                                         height: 120,
                                                         fit: BoxFit.cover,
+                                                        placeholder: (context, url) => Container(
+                                                          width: 80,
+                                                          height: 120,
+                                                          color: Colors.grey[300],
+                                                          child: const Icon(Icons.movie, size: 40, color: Colors.grey),
+                                                        ),
+                                                        errorWidget: (context, url, error) => Container(
+                                                          width: 80,
+                                                          height: 120,
+                                                          color: Colors.grey[300],
+                                                          child: const Icon(Icons.error, size: 40, color: Colors.red),
+                                                        ),
                                                       )
                                                     : Container(
                                                         width: 80,
@@ -313,11 +326,23 @@ class MovieSearchDelegate extends SearchDelegate {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: movie.posterPath != null
-                            ? Image.network(
-                                'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                            ? CachedNetworkImage(
+                                imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
                                 width: 80,
                                 height: 120,
                                 fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  width: 80,
+                                  height: 120,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.movie, size: 40, color: Colors.grey),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  width: 80,
+                                  height: 120,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.error, size: 40, color: Colors.red),
+                                ),
                               )
                             : Container(
                                 width: 80,
