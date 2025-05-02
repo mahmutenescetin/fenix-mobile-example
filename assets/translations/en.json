@@ -1,0 +1,17 @@
+{
+  "app_name": "Movie App",
+  "home": "Home",
+  "favorites": "Favorites",
+  "no_movies_found": "No movies found",
+  "overview": "Overview",
+  "search_movie": "Search movie...",
+  "error": {
+    "general": "An error occurred",
+    "retry": "Retry",
+    "server": "Server error occurred",
+    "network": "Please check your internet connection and try again",
+    "cache": "An error occurred while loading data",
+    "unknown": "An unexpected error occurred",
+    "cancel": "Cancel"
+  }
+} 
