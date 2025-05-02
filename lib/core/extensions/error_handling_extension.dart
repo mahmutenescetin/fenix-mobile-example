@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../error/failures.dart';
-import '../l10n/app_localizations.dart';
 import '../widgets/error_dialog.dart';
 
 extension ErrorHandlingExtension on BuildContext {

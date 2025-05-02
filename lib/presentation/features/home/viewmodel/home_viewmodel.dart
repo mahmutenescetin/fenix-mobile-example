@@ -1,177 +1,130 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../../../../core/base/error_state_mixin.dart';
-import '../../../../domain/entities/movie_entity.dart';
-import '../../../../domain/usecases/get_top_rated_movies.dart';
-import '../../../../domain/usecases/search_movies.dart';
+import 'package:fenix_mobile_example/domain/entities/movie_entity.dart';
+import 'package:fenix_mobile_example/domain/usecases/get_top_rated_movies.dart';
+import 'package:fenix_mobile_example/domain/usecases/search_movies.dart';
+import 'package:fenix_mobile_example/core/base/base_viewmodel.dart';
+import 'package:flutter/material.dart';
+import 'dart:async';
 
-class HomeViewmodel extends ChangeNotifier with ErrorStateMixin {
+class HomeViewModel extends BaseViewModel {
   final GetTopRatedMovies _getTopRatedMovies;
   final SearchMovies _searchMovies;
-  Timer? _debounce;
-
-  List<MovieEntity>? _cachedTopRatedMovies;
-  DateTime? _lastCacheTime;
-  static const cacheDuration = Duration(minutes: 5);
-
   List<MovieEntity> _movies = [];
-  bool _isLoading = false;
-  bool _isLoadingMore = false;
-  String _searchQuery = '';
+  List<MovieEntity> _cachedTopRatedMovies = [];
+  Timer? _debounceTimer;
+
   int _currentPage = 1;
-  bool _hasMorePages = true;
+  bool _hasMore = true;
+  bool _isFetching = false;
+  String _lastQuery = '';
+
+  HomeViewModel(this._getTopRatedMovies, this._searchMovies);
 
   List<MovieEntity> get movies => _movies;
-  bool get isLoading => _isLoading;
-  bool get isLoadingMore => _isLoadingMore;
-  String get searchQuery => _searchQuery;
-  bool get hasMorePages => _hasMorePages;
+  bool get hasMore => _hasMore;
 
-  HomeViewmodel(this._getTopRatedMovies, this._searchMovies);
+  @override
+  void onBindingCreated() {
+    super.onBindingCreated();
+    loadMovies(reset: true);
+  }
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
-  bool _isCacheValid() {
-    if (_cachedTopRatedMovies == null || _lastCacheTime == null) return false;
-    final now = DateTime.now();
-    return now.difference(_lastCacheTime!) < cacheDuration;
-  }
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
-  void _setLoadingMore(bool value) {
-    _isLoadingMore = value;
-    notifyListeners();
-  }
-
-  void _resetPagination() {
-    _currentPage = 1;
-    _hasMorePages = true;
-    _movies = [];
-  }
-
-  Future<void> getTopRatedMovies({bool loadMore = false}) async {
-    if (loadMore && (!_hasMorePages || _isLoadingMore)) return;
-
-    if (!loadMore && _isCacheValid()) {
-      _movies = _cachedTopRatedMovies!;
+  Future<void> loadMovies({bool reset = false}) async {
+    if (_isFetching) return;
+    _isFetching = true;
+    try {
+      if (reset) {
+        _currentPage = 1;
+        _movies = [];
+        _hasMore = true;
+      }
+      setLoading(true);
+      final movies = await _getTopRatedMovies(page: _currentPage);
+      if (_currentPage == 1) {
+        _movies = movies;
+        _cachedTopRatedMovies = List.from(_movies);
+      } else {
+        _movies.addAll(movies);
+      }
+      _hasMore = movies.isNotEmpty;
+      if (_hasMore) _currentPage++;
       notifyListeners();
-      return;
+    } catch (e) {
+      setError(e.toString());
+    } finally {
+      setLoading(false);
+      _isFetching = false;
     }
-
-    await handleError(
-      () async {
-        if (loadMore) {
-          _setLoadingMore(true);
-        } else {
-          _setLoading(true);
-          _resetPagination();
-        }
-
-        try {
-          final result = await _getTopRatedMovies(page: _currentPage);
-          if (result.isEmpty) {
-            _hasMorePages = false;
-          } else {
-            if (loadMore) {
-              _movies.addAll(result);
-            } else {
-              _movies = result;
-              _cachedTopRatedMovies = result;
-              _lastCacheTime = DateTime.now();
-            }
-            _currentPage++;
-          }
-        } finally {
-          if (loadMore) {
-            _setLoadingMore(false);
-          } else {
-            _setLoading(false);
-          }
-        }
-      },
-      (failure) {
-        if (loadMore) {
-          _setLoadingMore(false);
-        } else {
-          _setLoading(false);
-        }
-      },
-    );
   }
 
-  void onSearchQueryChanged(String query) {
-    _searchQuery = query;
-    
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    
-    if (query.isEmpty || query.length < 2) {
-      getTopRatedMovies();
-      return;
+  Future<List<MovieEntity>> searchMovies(String query, {bool reset = false}) async {
+    _debounceTimer?.cancel();
+    if (query.length < 2) {
+      _lastQuery = '';
+      _movies = List.from(_cachedTopRatedMovies);
+      notifyListeners();
+      return _movies;
     }
-
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      searchMovies(query);
+    final completer = Completer<List<MovieEntity>>();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      _lastQuery = query;
+      if (_isFetching) {
+        completer.complete(_movies);
+        return;
+      }
+      _isFetching = true;
+      try {
+        if (reset) {
+          _currentPage = 1;
+          _movies = [];
+          _hasMore = true;
+        }
+        setLoading(true);
+        final movies = await _searchMovies(query, page: _currentPage);
+        if (_currentPage == 1) {
+          _movies = movies;
+        } else {
+          _movies.addAll(movies);
+        }
+        _hasMore = movies.isNotEmpty;
+        if (_hasMore) _currentPage++;
+        notifyListeners();
+      } catch (e) {
+        setError(e.toString());
+      } finally {
+        setLoading(false);
+        _isFetching = false;
+        completer.complete(_movies);
+      }
     });
+    return completer.future;
   }
 
-  Future<void> searchMovies(String query, {bool loadMore = false}) async {
-    if (query.isEmpty) {
-      await getTopRatedMovies();
-      return;
+  Future<void> loadNextPage() async {
+    if (_lastQuery.isEmpty || _lastQuery.length < 2) {
+      await loadMovies();
+    } else {
+      await searchMovies(_lastQuery);
     }
-
-    if (loadMore && (!_hasMorePages || _isLoadingMore)) return;
-
-    await handleError(
-      () async {
-        if (loadMore) {
-          _setLoadingMore(true);
-        } else {
-          _setLoading(true);
-          _resetPagination();
-        }
-
-        try {
-          final result = await _searchMovies(query, page: _currentPage);
-          if (result.isEmpty) {
-            _hasMorePages = false;
-          } else {
-            if (loadMore) {
-              _movies.addAll(result);
-            } else {
-              _movies = result;
-            }
-            _currentPage++;
-          }
-        } finally {
-          if (loadMore) {
-            _setLoadingMore(false);
-          } else {
-            _setLoading(false);
-          }
-        }
-      },
-      (failure) {
-        if (loadMore) {
-          _setLoadingMore(false);
-        } else {
-          _setLoading(false);
-        }
-      },
-    );
   }
 
-  void clearCache() {
-    _cachedTopRatedMovies = null;
-    _lastCacheTime = null;
+  void clearSearch() {
+    // Implement clear search functionality
+  }
+
+  void scrollStart() {
+    debugPrint('scrollStart called');
+    // Implement scroll handling if needed
+  }
+
+  void navigateToDetail(int movieId) {
+    debugPrint('navigateToDetail called with movieId: $movieId');
+    // TODO: Implement navigation
   }
 } 

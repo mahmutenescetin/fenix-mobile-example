@@ -1,121 +1,68 @@
 import 'package:dio/dio.dart';
-import '../config/app_config.dart';
-import '../error/exceptions.dart';
-import 'http_client.dart';
+import 'package:fenix_mobile_example/core/config/app_config.dart';
+import 'package:fenix_mobile_example/core/error/exceptions.dart';
+import 'package:fenix_mobile_example/core/network/http_client.dart';
+import 'dart:developer' as developer;
 
 class DioClient implements HttpClient {
-  static Dio? _instance;
+  final Dio _dio;
 
-  static Dio get instance {
-    _instance ??= Dio()
-      ..options = BaseOptions(
-        baseUrl: AppConfig.baseUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 3),
-        sendTimeout: const Duration(seconds: 3),
-      )
-      ..interceptors.add(
-        LogInterceptor(
-          requestBody: true,
-          responseBody: true,
-          error: true,
-        ),
-      );
-
-    return _instance!;
+  DioClient() : _dio = Dio() {
+    _dio.options.baseUrl = '';
+    _dio.interceptors.add(LogInterceptor(
+      request: true,
+      requestBody: true,
+      responseBody: true,
+      error: true,
+    ));
   }
 
   @override
-  Future<Map<String, dynamic>> get(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-    Map<String, String>? headers,
-  }) async {
+  Future<Map<String, dynamic>> get(String url) async {
     try {
-      final response = await instance.get(
-        path,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
-      );
-      return _handleResponse(response);
+      final response = await _dio.get(url);
+      return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
+      throw Exception(e.message);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> post(
-    String path, {
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
-    Map<String, String>? headers,
-  }) async {
+  Future<Map<String, dynamic>> post(String url, {Map<String, dynamic>? data}) async {
     try {
-      final response = await instance.post(
-        path,
-        data: body,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
-      );
-      return _handleResponse(response);
+      final response = await _dio.post(url, data: data);
+      return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
+      throw Exception(e.message);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> put(
-    String path, {
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
-    Map<String, String>? headers,
-  }) async {
+  Future<Map<String, dynamic>> put(String url, {Map<String, dynamic>? data}) async {
     try {
-      final response = await instance.put(
-        path,
-        data: body,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
-      );
-      return _handleResponse(response);
+      final response = await _dio.put(url, data: data);
+      return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
+      throw Exception(e.message);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> delete(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-    Map<String, String>? headers,
-  }) async {
+  Future<Map<String, dynamic>> delete(String url) async {
     try {
-      final response = await instance.delete(
-        path,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
-      );
-      return _handleResponse(response);
+      final response = await _dio.delete(url);
+      return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      throw _handleDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
+      throw Exception(e.message);
     }
   }
 
   Map<String, dynamic> _handleResponse(Response response) {
-    if (response.data is Map<String, dynamic>) {
+    if (response.statusCode == 200) {
       return response.data;
     } else {
-      throw ServerException(
-        message: 'Invalid response format',
-        statusCode: response.statusCode,
+      throw NetworkException(
+        message: 'Unexpected status code: ${response.statusCode}',
       );
     }
   }
@@ -127,14 +74,17 @@ class DioClient implements HttpClient {
       case DioExceptionType.receiveTimeout:
         return NetworkException(message: 'Connection timeout');
       case DioExceptionType.badResponse:
-        return ServerException(
-          message: 'Server error',
-          statusCode: error.response?.statusCode,
+        return NetworkException(
+          message: 'Bad response: ${error.response?.statusCode}',
         );
       case DioExceptionType.cancel:
         return NetworkException(message: 'Request cancelled');
-      default:
-        return NetworkException(message: 'Network error: ${error.message}');
+      case DioExceptionType.connectionError:
+        return NetworkException(message: 'Connection error');
+      case DioExceptionType.unknown:
+        return NetworkException(message: 'Unknown error: ${error.message}');
+      case DioExceptionType.badCertificate:
+        return NetworkException(message: 'Bad certificate');
     }
   }
 } 

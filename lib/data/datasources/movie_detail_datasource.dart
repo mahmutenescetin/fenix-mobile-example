@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
-import '../../core/config/app_config.dart';
-import '../../core/network/http_client.dart';
-import '../../domain/entities/movie_detail_entity.dart';
+import 'package:fenix_mobile_example/core/config/app_config.dart';
+import 'package:fenix_mobile_example/core/network/http_client.dart';
+import 'package:fenix_mobile_example/domain/entities/movie_detail_entity.dart';
 
 class MovieDetailDataSource {
   final HttpClient client;
@@ -12,8 +12,7 @@ class MovieDetailDataSource {
     try {
       developer.log('Fetching movie detail for id: $movieId');
       final response = await client.get(
-        '/movie/$movieId',
-        queryParameters: {'api_key': AppConfig.apiKey},
+        '${AppConfig.movieDetail}/$movieId?api_key=${AppConfig.apiKey}',
       );
       developer.log('Response received: $response');
       return MovieDetailEntity.fromJson(response);

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class BaseViewModel extends ChangeNotifier {
   bool _isLoading = false;
+  String? _error;
   bool _isError = false;
   String? _errorMessage;
   bool _isDisposed = false;
@@ -11,18 +13,21 @@ abstract class BaseViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool get isError => _isError;
+  bool get hasError => _error != null;
+  String? get error => _error;
   String? get errorMessage => _errorMessage;
   bool get isDisposed => _isDisposed;
   bool get isBusy => _isBusy;
 
+  @protected
   void setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
-  void setError(bool value, {String? message}) {
-    _isError = value;
-    _errorMessage = message;
+  @protected
+  void setError(String? value) {
+    _error = value;
     notifyListeners();
   }
 
@@ -55,10 +60,10 @@ abstract class BaseViewModel extends ChangeNotifier {
       final T data = await callback();
       onSuccess?.call(data);
     } on DioException catch (dioException, stackTrace) {
-      setError(true, message: dioException.message);
+      setError(dioException.message);
       onError?.call(stackTrace, dioException);
     } catch (e) {
-      setError(true, message: e.toString());
+      setError(e.toString());
     } finally {
       onFinally?.call();
 
@@ -74,6 +79,10 @@ abstract class BaseViewModel extends ChangeNotifier {
       notify();
     }
   }
+
+  @protected
+  @visibleForTesting
+  void onBindingCreated() {}
 
   @override
   void dispose() {

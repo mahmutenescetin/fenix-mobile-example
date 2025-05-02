@@ -1,204 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../domain/entities/movie_entity.dart';
-import '../../../../core/config/app_config.dart';
-import '../../favorites/viewmodel/favorites_viewmodel.dart';
+import 'package:fenix_mobile_example/core/base/view_model_builder.dart';
+import 'package:fenix_mobile_example/core/base/stateless_widget.dart';
+import 'package:fenix_mobile_example/presentation/features/movie_detail/viewmodel/movie_detail_viewmodel.dart';
+import 'package:fenix_mobile_example/domain/usecases/get_movie_detail.dart';
+import 'package:fenix_mobile_example/core/extensions/context_localization_extension.dart';
 
-class MovieDetailView extends StatefulWidget {
-  final MovieEntity movie;
+class MovieDetailView extends BaseStatelessWidget {
+  final int movieId;
 
-  const MovieDetailView({
-    Key? key,
-    required this.movie,
-  }) : super(key: key);
-
-  @override
-  State<MovieDetailView> createState() => _MovieDetailViewState();
-}
-
-class _MovieDetailViewState extends State<MovieDetailView> {
-  late final FavoritesViewmodel _favoritesProvider;
-  bool _isFavorite = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _favoritesProvider = context.read<FavoritesViewmodel>();
-    _checkFavoriteStatus();
-  }
-
-  Future<void> _checkFavoriteStatus() async {
-    final isFavorite = await _favoritesProvider.isFavorite(widget.movie.id);
-    if (mounted) {
-      setState(() {
-        _isFavorite = isFavorite;
-      });
-    }
-  }
-
-  Future<void> _toggleFavorite() async {
-    if (_isFavorite) {
-      await _favoritesProvider.removeFromFavorites(widget.movie.id);
-    } else {
-      await _favoritesProvider.addToFavorites(widget.movie);
-    }
-    if (mounted) {
-      setState(() {
-        _isFavorite = !_isFavorite;
-      });
-    }
-  }
-
-  String _getImageUrl(String? path) {
-    if (path == null || path.isEmpty) return '';
-    if (path.startsWith('http')) return path;
-    return '${AppConfig.imageBaseUrl}/original$path';
-  }
+  const MovieDetailView({super.key, required this.movieId});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            backgroundColor: Colors.black.withAlpha(128),
-            leading: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(128),
-                shape: BoxShape.circle,
+    return ViewModelBuilder<MovieDetailViewModel>(
+      initViewModel: () => MovieDetailViewModel(
+        context.read<GetMovieDetail>(),
+        movieId: movieId,
+      ),
+      builder: (context, viewModel) => Scaffold(
+        appBar: AppBar(
+          title: Text(context.str.movieDetailTitle),
+          actions: [
+            IconButton(
+              icon: Icon(
+                viewModel.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: viewModel.isFavorite ? Colors.red : null,
               ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+              onPressed: viewModel.toggleFavorite,
             ),
-            actions: [
-              Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withAlpha(128),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    _isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: _isFavorite ? Colors.red : Colors.white,
-                  ),
-                  onPressed: _toggleFavorite,
-                ),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withAlpha(204),
-                    ],
-                  ),
-                ),
-                child: Text(
-                  widget.movie.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              background: Hero(
-                tag: 'movie_${widget.movie.id}',
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    widget.movie.posterPath != null
-                        ? Image.network(
-                            _getImageUrl(widget.movie.posterPath),
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              }
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Icon(
-                                  Icons.error_outline,
-                                  size: 48,
-                                  color: Colors.red,
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            color: Colors.grey[200],
-                            child: const Icon(
-                              Icons.movie_outlined,
-                              size: 48,
-                              color: Colors.grey,
+          ],
+        ),
+        body: viewModel.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : viewModel.hasError
+                ? Center(
+                    child: Text(viewModel.error ?? context.str.anErrorOccurred))
+                : viewModel.movie == null
+                    ? Center(child: Text(context.str.movieNotFound))
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (viewModel.movie?.posterPath?.isNotEmpty == true)
+                              Image.network(
+                                'https://image.tmdb.org/t/p/w500${viewModel.movie?.posterPath}',
+                                width: double.infinity,
+                                height: 300,
+                                fit: BoxFit.cover,
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    viewModel.movie?.title ?? '',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    context.str.releaseDate(
+                                        viewModel.movie?.releaseDate ?? ''),
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    context.str.rating(viewModel
+                                            .movie?.voteAverage
+                                            ?.toString() ??
+                                        '0'),
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    viewModel.movie?.overview ?? '',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withAlpha(179),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  Text(
-                    'Özet',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(widget.movie.overview),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      Text(
-                        widget.movie.voteAverage.toStringAsFixed(1),
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
-} 
+}

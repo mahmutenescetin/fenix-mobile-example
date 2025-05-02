@@ -1,74 +1,56 @@
-import 'package:fenix_mobile_example/core/base/error_state_mixin.dart';
 import 'package:flutter/foundation.dart';
-import '../../../../domain/entities/movie_entity.dart';
-import '../../../../domain/usecases/get_favorites.dart';
-import '../../../../domain/usecases/add_to_favorites.dart';
-import '../../../../domain/usecases/remove_from_favorites.dart';
-import '../../../../domain/usecases/is_favorite.dart';
+import 'package:fenix_mobile_example/domain/entities/movie_entity.dart';
+import 'package:fenix_mobile_example/core/base/base_viewmodel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class FavoritesViewmodel extends ChangeNotifier with ErrorStateMixin {
-  final GetFavorites _getFavorites;
-  final AddToFavorites _addToFavorites;
-  final RemoveFromFavorites _removeFromFavorites;
-  final IsFavorite _isFavorite;
+class FavoritesViewModel extends BaseViewModel {
+  List<MovieEntity> _movies = [];
 
-  List<MovieEntity> _favorites = [];
-  bool _isLoading = false;
+  List<MovieEntity> get movies => _movies;
 
-  FavoritesViewmodel(
-    this._getFavorites,
-    this._addToFavorites,
-    this._removeFromFavorites,
-    this._isFavorite,
-  );
-
-  List<MovieEntity> get favorites => _favorites;
-  bool get isLoading => _isLoading;
+  @override
+  void onBindingCreated() {
+    super.onBindingCreated();
+    loadFavorites();
+  }
 
   Future<void> loadFavorites() async {
-    _isLoading = true;
-    notifyListeners();
-
-    await handleError(
-      () async {
-        _favorites = await _getFavorites();
-      },
-      (failure) {
-        _favorites = [];
-      },
-    );
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> addToFavorites(MovieEntity movie) async {
-    await handleError(
-      () async {
-        await _addToFavorites(movie);
-        _favorites.add(movie);
-        notifyListeners();
-      },
-      (failure) {},
-    );
-  }
-
-  Future<void> removeFromFavorites(int movieId) async {
-    await handleError(
-      () async {
-        await _removeFromFavorites(movieId);
-        _favorites.removeWhere((movie) => movie.id == movieId);
-        notifyListeners();
-      },
-      (failure) {},
-    );
-  }
-
-  Future<bool> isFavorite(int movieId) async {
     try {
-      return await _isFavorite(movieId);
+      setLoading(true);
+      _movies = await _getFavorites();
+      notifyListeners();
     } catch (e) {
-      return false;
+      setError(e.toString());
+    } finally {
+      setLoading(false);
+      notifyListeners();
     }
+  }
+
+  Future<List<MovieEntity>> _getFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final favoriteIds = prefs.getKeys()
+        .where((key) => key.startsWith('favorite_'))
+        .map((key) => key.split('_')[1])
+        .toSet()
+        .toList();
+    
+    return favoriteIds.map((id) {
+      try {
+        final movieId = int.parse(id);
+        final title = prefs.getString('favorite_${id}_title') ?? '';
+        if (title.isEmpty) return null;
+        return MovieEntity(
+          id: movieId,
+          title: title,
+          overview: prefs.getString('favorite_${id}_overview') ?? '',
+          posterPath: prefs.getString('favorite_${id}_posterPath'),
+          voteAverage: prefs.getDouble('favorite_${id}_voteAverage') ?? 0.0,
+        );
+      } catch (e) {
+        debugPrint('Error parsing favorite ID: $id');
+        return null;
+      }
+    }).whereType<MovieEntity>().toList();
   }
 } 

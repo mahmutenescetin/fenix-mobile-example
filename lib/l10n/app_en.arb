@@ -1,0 +1,88 @@
+{
+  "@@locale": "en",
+  "home": "Home",
+  "favorites": "Favorites",
+  "appTitle": "Fenix Mobile Example",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "hello": "Hello",
+  "@hello": {
+    "description": "A friendly greeting"
+  },
+  "movieDetailTitle": "Movie Detail",
+  "@movieDetailTitle": {
+    "description": "Title of the movie detail screen"
+  },
+  "movieNotFound": "Movie not found",
+  "@movieNotFound": {
+    "description": "Message shown when movie is not found"
+  },
+  "moviesTitle": "Movies",
+  "@moviesTitle": {
+    "description": "Title of the movies screen"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Text for try again button"
+  },
+  "searchHint": "Search movies...",
+  "@searchHint": {
+    "description": "Hint text for movie search"
+  },
+  "anErrorOccurred": "An error occurred",
+  "@anErrorOccurred": {
+    "description": "Generic error message"
+  },
+  "noMoviesFound": "No movies found",
+  "@noMoviesFound": {
+    "description": "Message shown when no movies are found"
+  },
+  "pleaseTryADifferentSearch": "Please try a different search",
+  "@pleaseTryADifferentSearch": {
+    "description": "Message shown when search returns no results"
+  },
+  "releaseDate": "Release Date: {date}",
+  "@releaseDate": {
+    "description": "Movie release date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "rating": "Rating: {rating}",
+  "@rating": {
+    "description": "Movie rating",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "searchErrorMessage": "An error occurred during search",
+  "@searchErrorMessage": {
+    "description": "Error message shown during search"
+  },
+  "noResultsFound": "No results found",
+  "@noResultsFound": {
+    "description": "Message shown when no search results are found"
+  },
+  "noResultsForQuery": "No results found for \"{query}\"",
+  "@noResultsForQuery": {
+    "description": "Message shown when no results are found for a specific query",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noFavoriteMovies": "You have no favorite movies yet",
+  "@noFavoriteMovies": {
+    "description": "Message shown when no favorite movies exist"
+  },
+  "addFavoritesHint": "You can see your favorite movies here by adding them to favorites",
+  "@addFavoritesHint": {
+    "description": "Hint message for adding favorite movies"
+  }
+}

@@ -1,8 +1,8 @@
-import '../entities/movie_detail_entity.dart';
-import '../repositories/movie_detail_repository.dart';
+import 'package:fenix_mobile_example/domain/entities/movie_detail_entity.dart';
+import 'package:fenix_mobile_example/domain/repositories/movie_repository.dart';
 
 class GetMovieDetail {
-  final MovieDetailRepository repository;
+  final MovieRepository repository;
 
   GetMovieDetail(this.repository);
 

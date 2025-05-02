@@ -16,7 +16,7 @@ class MovieSearchBar extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
         onChanged: (value) {
-          context.read<HomeViewmodel>().onSearchQueryChanged(value);
+          context.read<HomeViewModel>().searchMovies(value);
         },
       ),
     );
