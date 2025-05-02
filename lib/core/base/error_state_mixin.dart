@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../../../core/error/failures.dart';
+import '../error/failures.dart';
 
 mixin ErrorStateMixin on ChangeNotifier {
   Failure? _failure;
